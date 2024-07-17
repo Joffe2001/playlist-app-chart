@@ -1,0 +1,53 @@
+global:
+  image:
+    tag: v2.3.0
+
+# Server settings
+server:
+  service:
+    type: LoadBalancer
+  ingress:
+    enabled: false
+
+configs:
+  # Configure ArgoCD applications
+  applications: |
+    - apiVersion: argoproj.io/v1alpha1
+      kind: Application
+      metadata:
+        name: playlist-app
+        namespace: argocd
+      spec:
+        project: default
+        source:
+          repoURL: https://github.com/Joffe2001/playlist-app-chart.git
+          targetRevision: main
+          path: .
+        destination:
+          server: https://kubernetes.default.svc
+          namespace: default
+        syncPolicy:
+          automated:
+            prune: true
+            selfHeal: true
+    - apiVersion: argoproj.io/v1alpha1
+      kind: Application
+      metadata:
+        name: prometheus
+        namespace: argocd
+      spec:
+        project: default
+        source:
+          repoURL: https://github.com/Joffe2001/playlist-app-chart.git
+          targetRevision: main
+          path: .
+          helm:
+            valueFiles:
+              - values/prometheus-values.yaml
+        destination:
+          server: https://kubernetes.default.svc
+          namespace: observation
+        syncPolicy:
+          automated:
+            prune: true
+            selfHeal: true
